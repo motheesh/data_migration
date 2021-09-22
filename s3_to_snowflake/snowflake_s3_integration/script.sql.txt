@@ -1,0 +1,62 @@
+-- use of database
+use database data_migration;
+
+-- step1 define table structure of data from s3 bucket
+create or replace table oracle_data(id NUMBER(38,0), -- param1-length of the number| param2 - allowed digits after decimal
+                              name VARCHAR(30)
+                             );
+
+-- to load data from s3 bucket we have to create integration object
+    -- intergration object - to establish connection between s3 bucket and snowflake
+
+create or replace storage integration s3_bucket_integration
+type= external_stage 
+  -- 2 types of stage 
+    -- internal stage - which is used to communicate within snowflake
+    -- external stage - which is used to communicate with external data source
+storage_provider=s3
+enabled=true
+storage_aws_role_arn='arn:aws:iam::253239511224:role/snowflake-role-dev' -- role arn ID who have access to s3 buckets
+storage_allowed_locations=('s3://testsnowflakemigration/dev/') -- s3://<bucketname>/<folderName>/
+
+
+--desc INTEGRATION s3_bucket_integration;
+-- copy IAM user ARN from s3_bucket_integration and update that in ARN role trust relationship
+-- update external ID in trust relationship
+-- above step is like agreement for communication
+
+
+--- creating file format for data stored in s3 bucket----
+
+create or replace file format data_migration.public.csv_format
+type=csv
+--field_delimiter='|'
+skip_header=1
+null_if=('null','NULL')
+empty_field_as_null=true;
+
+
+
+--- create a stage object ---
+
+create or replace stage data_migration.public.dev_ext_stage
+url="s3://testsnowflakemigration/dev/csv/loadData.CSV"
+storage_integration=s3_bucket_integration
+file_format=data_migration.public.csv_format;
+
+--- load data now ---
+create or replace pipe data_migration.public.auto_ingest_pipe 
+auto_ingest=true as
+copy into oracle_data 
+from @data_migration.public.dev_ext_stage
+on_error= CONTINUE;
+
+--view pipe--
+show pipes;
+
+-- check loaded data --
+select * from oracle_data;
+
+
+
+

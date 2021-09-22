@@ -1,0 +1,9 @@
+1)create IAM role
+Identity and access management
+- create group
+- create users
+ - to access s3 bucket we need secret access key
+- create roles
+ - to communicate bw different sources internally or externally
+ - provide access to s3 bucket
+ - get the arn id which have access to s3 bucket

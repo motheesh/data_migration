@@ -1,0 +1,8 @@
+Steps to load data from s3 bucket
+1)create table structure
+2)create integration object to establish connection between s3 and snowflake
+3)update arn ID and external ID in role's trust relationship
+4)define and create file format for s3 file
+5)create stage for loading data 
+6)create pipe for auto ingestion and copy data from stage to table
+7)update pipe details in s3 bucket and create trigger for updates
